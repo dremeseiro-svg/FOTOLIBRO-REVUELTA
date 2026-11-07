@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROYECTO BULD - FOTOLIBRO LA REVUELTA</title>
+  <style>
+    /* 1. CONFIGURACIÓN GLOBAL DE PÁGINA */
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Georgia", "Didot", serif;
+      background-color: #e5e5e5;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+    }
+
+    /* BARRA NAVEGACIÓN SUPERIOR FIJA (ADAPTABLE) */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      min-height: 45px;
+      background-color: #111111;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 15px;
+      z-index: 1000;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 1.5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      flex-wrap: nowrap;
+      gap: 15px;
+    }
+
+    .top-nav-title {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .top-nav a:hover {
+      opacity: 0.7;
+    }
+
+    @media (max-width: 600px) {
+      .top-nav {
+        padding: 8px 12px;
+      }
+      .top-nav-title {
+        font-size: 7.5pt;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .main-container {
+      padding-top: 60px;
+      padding-bottom: 40px;
+    }
+
+    /* 2. ESTRUCTURA DE PÁGINA A4 (ESCRITORIO) */
+    .a4-page {
+      width: 210mm;
+      height: 297mm;
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto 12mm auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: #fcfcfc;
+      color: #1a1a1a;
+      padding: 10mm 18mm 8mm 18mm;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    }
+
+    /* PRÓLOGO Y PORTADAS */
+    .book-cover { text-align: center; margin: auto 0; }
+    .book-project-tag { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11pt; letter-spacing: 5px; color: #111111; font-weight: 500; margin-bottom: 2mm; }
+    .book-main-title { font-size: 18pt; letter-spacing: 3px; font-weight: 300; color: #111111; margin-bottom: 4mm; }
+    
+    .book-prologue {
+      font-size: 12.5pt;
+      line-height: 1.4;
+      font-style: italic;
+      color: #333333;
+      max-width: 155mm;
+      margin: 0 auto;
+      text-align: justify;
+      text-justify: inter-word;
+      padding: 2mm 0;
+      border-top: 1px solid #eaeaea;
+      border-bottom: 1px solid #eaeaea;
+    }
+    
+    .book-prologue p {
+      margin: 0 0 2mm 0;
+      text-indent: 5mm;
+    }
+    
+    .book-prologue p:first-of-type {
+      text-indent: 0;
+    }
+
+    .intro-title-tag {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 3px;
+      color: #111111;
+      font-weight: 600;
+      margin-bottom: 2mm;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .prologue-signature {
+      font-size: 10pt;
+      font-style: normal;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      text-align: right;
+      margin-top: 1.5mm;
+      color: #555555;
+      letter-spacing: 2px;
+    }
+
+    /* ÍNDICE / SUMARIO INTERACTIVO */
+    .index-header { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 9pt; letter-spacing: 3px; color: #111111; border-bottom: 1px solid #111111; padding-bottom: 1.5mm; margin-bottom: 2mm; text-align: center; }
+    .index-list { list-style: none; padding: 0; margin: 0 0 2mm 0; font-size: 11pt; line-height: 1.35; }
+    .index-item { border-bottom: 1px dotted #eaeaea; padding: 0.4mm 0; }
+    .index-item a { display: flex; justify-content: space-between; text-decoration: none; font-style: italic; color: #2c2c2c; transition: color 0.2s; }
+    .index-item a:hover { color: #000000; font-weight: 500; }
+    .index-item span:last-child { font-family: "Helvetica Neue", Arial, sans-serif; font-style: normal; font-size: 9.5pt; color: #777777; }
+
+    /* BOTONES Y ACCIONES FLOTANTES */
+    .back-to-index {
+      position: absolute;
+      top: 10mm;
+      left: 18mm;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 7.5pt;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #555555;
+      background: #f0f0f0;
+      padding: 1mm 3mm;
+      border-radius: 2px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s, color 0.2s;
+      z-index: 10;
+    }
+    .back-to-index:hover {
+      background: #111111;
+      color: #ffffff;
+    }
+
+    .print-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1mm;
+    }
+
+    .print-btn {
+      background-color: #111111;
+      color: #ffffff;
+      padding: 1.5mm 4mm;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 7.5pt;
+      letter-spacing: 1.5px;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+    .print-btn:hover { background-color: #333333; }
+    .print-btn-secondary { background-color: #666666; }
+
+    /* DISEÑO INTERNO DE OBRA */
+    .inner-header { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8.5pt; letter-spacing: 3px; color: #777777; border-bottom: 1px solid #eaeaea; padding-bottom: 1.5mm; display: flex; justify-content: space-between; align-items: center; position: relative; margin-top: 6mm; }
+    .page-number { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8pt; letter-spacing: 2px; color: #999999; }
+
+    /* CONTENEDOR TRIPLE EN LÍNEA (INTERACTIVO PARA VISOR COMPLETO) */
+    .triple-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      width: 100%;
+      margin: 3mm 0;
+      cursor: pointer;
+      border: 1px dashed transparent;
+      transition: border-color 0.2s;
+      padding: 5px;
+    }
+    .triple-container:hover {
+      border-color: #cccccc;
+    }
+
+    .triple-part {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .triple-part img {
+      max-width: 100%;
+      max-height: 110mm;
+      object-fit: contain;
+      display: block;
+    }
+
+    .triple-text-part {
+      flex: 1.1;
+      font-style: italic;
+      font-size: 11pt;
+      line-height: 1.4;
+      color: #1a1a1a;
+      text-align: center;
+      padding: 0 4px;
+    }
+
+    .image-watermark { position: absolute; bottom: 4px; right: 4px; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 7pt; letter-spacing: 1.5px; color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); pointer-events: none; background: rgba(0, 0, 0, 0.5); padding: 1px 4px; z-index: 2; }
+
+    /* BLOQUE POÉTICO INFERIOR FORMATADO (JUSTIFICADO Y CON SANGRÍA) */
+    .stanza-content { 
+      margin: 3mm auto 1mm auto; 
+      max-width: 155mm; 
+      width: 100%; 
+    }
+    .stanza-number { 
+      font-family: "Helvetica Neue", Arial, sans-serif; 
+      font-size: 9.5pt; 
+      letter-spacing: 4px; 
+      color: #333333; 
+      font-weight: 600; 
+      margin-bottom: 2mm; 
+      text-align: center; 
+    }
+    .stanza-text { 
+      font-size: 12pt;
+      line-height: 1.45; 
+      font-style: italic; 
+      color: #1a1a1a; 
+      text-align: justify; 
+      text-justify: inter-word; 
+      text-indent: 6mm; 
+      margin: 0;
+    }
+    .stanza-text p {
+      margin: 0 0 1.5mm 0;
+      text-indent: 6mm;
+    }
+    .stanza-text p:first-of-type {
+      text-indent: 6mm;
+    }
+
+    .section-title { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8pt; letter-spacing: 3px; color: #111111; border-bottom: 1px solid #111111; padding-bottom: 0.8mm; margin-top: 1.5mm; margin-bottom: 1mm; }
+    
+    .tech-table { width: 100%; border-collapse: collapse; margin-bottom: 1mm; }
+    .tech-table td { padding: 0.45mm 0; border-bottom: 1px solid #eaeaea; font-size: 7.8pt; }
+    .tech-label { font-family: "Helvetica Neue", Arial, sans-serif; letter-spacing: 1.5px; color: #666666; width: 35%; }
+    .tech-value { color: #1a1a1a; font-size: 8.2pt; }
+
+    .inner-footer { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8pt; letter-spacing: 1.5px; color: #777777; text-align: center; border-top: 1px solid #eaeaea; padding-top: 1.5mm; line-height: 1.4; }
+    .inner-footer a { color: #555555; text-decoration: none; }
+
+    /* LIGHTBOX / VISOR COMPLETO GLOBAL */
+    #lightbox { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      background-color: rgba(0, 0, 0, 0.95); 
+      display: none; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 9999; 
+    }
+    #lightbox.active { display: flex; }
+    
+    .lightbox-content-wrapper {
+      position: relative;
+      background: #fcfcfc;
+      padding: 25px 30px;
+      border-radius: 4px;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .lightbox-triple-view {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      max-height: 75vh;
+    }
+
+    .lightbox-triple-view .lightbox-img-box {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lightbox-triple-view img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-triple-view .lightbox-text-box {
+      flex: 1.2;
+      font-style: italic;
+      font-size: 11pt;
+      line-height: 1.4;
+      color: #1a1a1a;
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    .lightbox-btn { 
+      position: absolute; 
+      background: rgba(0, 0, 0, 0.7); 
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      color: #ffffff; 
+      font-size: 12pt; 
+      cursor: pointer; 
+      padding: 6px 12px; 
+      user-select: none; 
+      font-family: Arial, sans-serif; 
+      border-radius: 3px;
+      transition: background 0.2s;
+    }
+    .lightbox-btn:hover { background: rgba(255, 255, 255, 0.3); }
+    #lightbox-close { top: 10px; right: 10px; font-size: 14pt; z-index: 10; }
+
+    /* CORRECCIÓN ADAPTABLE PARA MÓVILES */
+    @media screen and (max-width: 768px) {
+      .a4-page {
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 0 15px 0 !important;
+        /* Padding superior ampliado para evitar que el botón de índice y el número se monten sobre el título */
+        padding: 45px 15px 20px 15px !important;
+        overflow: visible !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      
+      /* Posicionamiento fluido para el botón de índice y número de página en móvil */
+      .back-to-index {
+        top: 12px;
+        left: 15px;
+      }
+      
+      .page-number {
+        position: absolute;
+        top: 12px;
+        right: 15px;
+      }
+
+      .book-cover {
+        margin-top: 10px;
+      }
+
+      .triple-container {
+        flex-direction: column;
+      }
+      
+      .lightbox-triple-view {
+        flex-direction: column;
+        overflow-y: auto;
+        max-height: 80vh;
+      }
+    }
+
+    @media print {
+      .top-nav { display: none !important; }
+      .main-container { padding-top: 0 !important; padding-bottom: 0 !important; }
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+
+      .hide-on-print { display: none !important; }
+
+      .a4-page {
+        width: 210mm !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        padding: 10mm 18mm 8mm 18mm !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .a4-page + .a4-page {
+        page-break-before: always !important;
+        break-before: page !important;
+      }
+
+      .print-actions, .back-to-index, #lightbox {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR FIJA -->
+  <div class="top-nav">
+    <div class="top-nav-title">PROYECTO BULD - FOTOLIBRO LA REVUELTA</div>
+    <a href="#sumario">▲ ÍNDICE</a>
+  </div>
+
+  <div class="main-container">
+
+    <!-- PÁGINA 1: PRÓLOGO UNIFICADO -->
+    <div class="a4-page" id="introduccion">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 1</div>
+      <div></div>
+      <div class="book-cover">
+        <div class="book-project-tag">PROYECTO BULD</div>
+        <div class="book-main-title">FOTOLIBRO: LA REVUELTA</div>
+        
+        <div class="book-prologue">
+          <div class="intro-title-tag">BANLIEUE</div>
+          <p>Estuvimos hasta tarde. Toda la banlieue va a estar ahí, hermano. El barrio transpira revancha, odio a la policía y una enorme sensación de que no hay solución a los problemas.</p>
+          <p>Todo el mundo tiene los bolsillos rotos. Dos mundos que no se cruzan. Las espaldas maltratadas. Ninguna revuelta se hace sin humo.</p>
+          <p>La cabeza dentro del “Blocus” que convoca por la educación pública. Saqueamos tiendas de Vuitton. Si no tienes QR no te puedes unir a la comunidad.</p>
+          <p>Es solo un símbolo, una atracción simbólica. Ropa negra de arriba abajo. Toda la Banlieue bajará a París.</p>
+          <p><em>"Ya que no podemos formar parte de vuestro escaparate, os vamos a romper en la cara".</em></p>
+          <div class="prologue-signature">Daniel Remeseiro, Noviembre 2026</div>
+        </div>
+      </div>
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- PÁGINA 2: SUMARIO (5 TÍTULOS) + FICHA TÉCNICA GLOBAL -->
+    <div class="a4-page" id="sumario">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 2</div>
+      <div>
+        <div class="index-header" style="margin-top: 2mm;">SUMARIO · LA REVUELTA</div>
+        <ul class="index-list">
+          <li class="index-item"><a href="#tirar-piedras"><span>1. Tirar Piedras</span><span>[Página 3]</span></a></li>
+          <li class="index-item"><a href="#egalite"><span>2. Égalité</span><span>[Página 4]</span></a></li>
+          <li class="index-item"><a href="#suburbio"><span>3. Suburbio (Banlieue)</span><span>[Página 5]</span></a></li>
+          <li class="index-item"><a href="#blocus"><span>4. Blocus</span><span>[Página 6]</span></a></li>
+          <li class="index-item"><a href="#simbolos-rotos"><span>5. Símbolos Rotos</span><span>[Página 7]</span></a></li>
+        </ul>
+        <br>
+        <div class="section-title">FICHA TÉCNICA Y ESPECIFICACIONES</div>
+        <table class="tech-table">
+          <tr><td class="tech-label">TÍTULO DEL FOTOLIBRO</td><td class="tech-value">PROYECTO BULD - FOTOLIBRO LA REVUELTA</td></tr>
+          <tr><td class="tech-label">ESTRUCTURA</td><td class="tech-value">Obra poético-visual compuesta por texto, haikus y Fotografía Documental/Experimental</td></tr>
+          <tr><td class="tech-label">CAPTURA Y ÓPTICA</td><td class="tech-value">SONY ILCE-6000 (16-50 mm) y soportes mixtos</td></tr>
+          <tr><td class="tech-label">TÉCNICA FOTOGRÁFICA</td><td class="tech-value">Fotografía digital, abstracción, collage y arte urbano</td></tr>
+          <tr><td class="tech-label">SOPORTE & PAPEL</td><td class="tech-value">Impresión Giclée sobre papel de algodón de alta durabilidad</td></tr>
+          <tr><td class="tech-label">UBICACIÓN & AÑO</td><td class="tech-value">A Coruña, Galicia 2026</td></tr>
+        </table>
+        <br>
+        <div class="print-actions" style="margin-top: 1mm;">
+          <button class="print-btn print-btn-secondary" onclick="window.print()">Imprimir Fotolibro Completo</button>
+        </div>
+      </div>
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 1. TIRAR PIEDRAS (PÁGINA 3)                                -->
+    <!-- ========================================================== -->
+    <div class="a4-page" id="tirar-piedras" data-obra="tirar-piedras">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 3</div>
+      
+      <div class="inner-header"><span>TIRAR PIEDRAS · SECUENCIA VISUAL</span></div>
+      
+      <div class="triple-container" onclick="openLightboxTriple('piedra1.jpg', '<strong>HAIKU</strong><br>Roto el cristal frío,<br>la piedra arranca la careta:<br>el sistema al desnudo.', 'piedra2.jpg')">
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="piedra1.jpg" alt="Piedra 1">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+
+        <div class="triple-text-part">
+          <p><strong>HAIKU</strong><br>Roto el cristal frío,<br>la piedra arranca la careta:<br>el sistema al desnudo.</p>
+        </div>
+
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="piedra2.jpg" alt="Piedra 2">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stanza-content">
+        <div class="stanza-number">TIRAR PIEDRAS</div>
+        <div class="stanza-text">
+          <p>Tiro piedras a los cristales para romper de golpe la opaca barrera del sistema. Es un acto directo para sacarlos de su refugio blindado y exponer con claridad, ante la vista de todos, aquello que ejecutan en contra de nuestro propio interés.</p>
+        </div>
+      </div>
+
+      <div class="print-actions" style="margin-bottom: 2mm;">
+        <button class="print-btn" onclick="imprimirObraIndividual('tirar-piedras')">Imprimir esta obra</button>
+      </div>
+
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA · TIRAR PIEDRAS<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 2. ÉGALITÉ (PÁGINA 4)                                      -->
+    <!-- ========================================================== -->
+    <div class="a4-page" id="egalite" data-obra="egalite">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 4</div>
+      
+      <div class="inner-header"><span>ÉGALITÉ · SECUENCIA VISUAL</span></div>
+      
+      <div class="triple-container" onclick="openLightboxTriple('estatua1.jpg', '<strong>HAIKU</strong><br>Prometen leyes,<br>borran nuestros derechos<br>a plena luz.', 'estatua2.jpg')">
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="estatua1.jpg" alt="Estatua 1">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+
+        <div class="triple-text-part">
+          <p><strong>HAIKU</strong><br>Prometen leyes,<br>borran nuestros derechos<br>a plena luz.</p>
+        </div>
+
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="estatua2.jpg" alt="Estatua 2">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stanza-content">
+        <div class="stanza-number">ÉGALITÉ</div>
+        <div class="stanza-text">
+          <p>Cada día son más los derechos que se van desvaneciendo en silencio frente a lo establecido. Una deriva constante que atenta directamente contra las garantías constitucionales y los principios esenciales que sostienen la estructura democrática.</p>
+        </div>
+      </div>
+
+      <div class="print-actions" style="margin-bottom: 2mm;">
+        <button class="print-btn" onclick="imprimirObraIndividual('egalite')">Imprimir esta obra</button>
+      </div>
+
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA · ÉGALITÉ<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 3. SUBURBIO (BANLIEUE) (PÁGINA 5)                         -->
+    <!-- ========================================================== -->
+    <div class="a4-page" id="suburbio" data-obra="suburbio">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 5</div>
+      
+      <div class="inner-header"><span>SUBURBIO (BANLIEUE) · SECUENCIA VISUAL</span></div>
+      
+      <div class="triple-container" onclick="openLightboxTriple('cacharreria1.jpg', '<strong>HAIKU</strong><br>Fuera del escaparate,<br>romperos en la cara<br>la verdad.', 'cacharreria2.jpg')">
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="cacharreria1.jpg" alt="Cacharrería 1">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+
+        <div class="triple-text-part">
+          <p><strong>HAIKU</strong><br>Fuera del escaparate,<br>romperos en la cara<br>la verdad.</p>
+        </div>
+
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="cacharreria2.jpg" alt="Cacharrería 2">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stanza-content">
+        <div class="stanza-number">SUBURBIO (BANLIEUE)</div>
+        <div class="stanza-text">
+          <p>Todo el mundo tiene los bolsillos rotos. Dos mundos que no se cruzan. Las espaldas maltratadas. Ninguna revuelta se hace sin humo.</p>
+        </div>
+      </div>
+
+      <div class="print-actions" style="margin-bottom: 2mm;">
+        <button class="print-btn" onclick="imprimirObraIndividual('suburbio')">Imprimir esta obra</button>
+      </div>
+
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA · SUBURBIO (BANLIEUE)<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 4. BLOCUS (PÁGINA 6)                                       -->
+    <!-- ========================================================== -->
+    <div class="a4-page" id="blocus" data-obra="blocus">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 6</div>
+      
+      <div class="inner-header"><span>BLOCUS · SECUENCIA VISUAL</span></div>
+      
+      <div class="triple-container" onclick="openLightboxTriple('blocus1.jpg', '<strong>HAIKU</strong><br>Muros del blocus,<br>fuego en tiendas de oro:<br>sin código, no hay tribu.', 'blocus2.jpg')">
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="blocus1.jpg" alt="Blocus 1">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+
+        <div class="triple-text-part">
+          <p><strong>HAIKU</strong><br>Muros del blocus,<br>fuego en tiendas de oro:<br>sin código, no hay tribu.</p>
+        </div>
+
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="blocus2.jpg" alt="Blocus 2">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stanza-content">
+        <div class="stanza-number">BLOCUS</div>
+        <div class="stanza-text">
+          <p>La cabeza dentro del “Blocus” que convoca por la educación pública. Saqueamos tiendas de Vuitton. Si no tienes QR no te puedes unir a la comunidad.</p>
+        </div>
+      </div>
+
+      <div class="print-actions" style="margin-bottom: 2mm;">
+        <button class="print-btn" onclick="imprimirObraIndividual('blocus')">Imprimir esta obra</button>
+      </div>
+
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA · BLOCUS<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 5. SÍMBOLOS ROTOS (PÁGINA 7)                              -->
+    <!-- ========================================================== -->
+    <div class="a4-page" id="simbolos-rotos" data-obra="simbolos-rotos">
+      <a href="#sumario" class="back-to-index">▲ Índice</a>
+      <div class="page-number">Página 7</div>
+      
+      <div class="inner-header"><span>SÍMBOLOS ROTOS · SECUENCIA VISUAL</span></div>
+      
+      <div class="triple-container" onclick="openLightboxTriple('simbolo1.jpg', '<strong>HAIKU</strong><br>Siluetas de negro,<br>ropa y marcha unánime<br>bajando a París.', 'simbolo2.jpg')">
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="simbolo1.jpg" alt="Símbolos Rotos 1">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+
+        <div class="triple-text-part">
+          <p><strong>HAIKU</strong><br>Siluetas de negro,<br>ropa y marcha unánime<br>bajando a París.</p>
+        </div>
+
+        <div class="triple-part">
+          <div style="position:relative; display:inline-block; max-width:100%;">
+            <img src="simbolo2.jpg" alt="Símbolos Rotos 2">
+            <div class="image-watermark" style="bottom:2px; right:2px; font-size:6pt;">Remeseiro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stanza-content">
+        <div class="stanza-number">SÍMBOLOS ROTOS</div>
+        <div class="stanza-text">
+          <p>Es solo un símbolo, una atracción simbólica. Ropa negra de arriba abajo. Toda la Banlieue bajará a París.</p>
+        </div>
+      </div>
+
+      <div class="print-actions" style="margin-bottom: 2mm;">
+        <button class="print-btn" onclick="imprimirObraIndividual('simbolos-rotos')">Imprimir esta obra</button>
+        <button class="print-btn print-btn-secondary" onclick="window.print()">Imprimir Fotolibro Completo</button>
+      </div>
+
+      <div>
+        <div class="inner-footer">PROYECTO BULD - FOTOLIBRO LA REVUELTA · SÍMBOLOS ROTOS<br><a href="mailto:dremeseiro@gmail.com">dremeseiro@gmail.com</a> | WhatsApp | <a href="https://www.danielremeseiro.es" target="_blank">www.danielremeseiro.es</a><br>© Daniel Remeseiro · A Coruña · Noviembre 2026</div>
+      </div>
+    </div>
+
+  </div> <!-- FIN MAIN CONTAINER -->
+
+  <!-- LIGHTBOX GLOBAL PARA VISUALIZAR LOS TRES ELEMENTOS JUNTOS -->
+  <div id="lightbox">
+    <div class="lightbox-content-wrapper">
+      <button id="lightbox-close" class="lightbox-btn" onclick="closeLightbox()">×</button>
+      <div class="lightbox-triple-view">
+        <div class="lightbox-img-box">
+          <img id="lb-img1" src="" alt="Imagen 1">
+        </div>
+        <div class="lightbox-text-box" id="lb-text">
+          <!-- Texto / Haiku -->
+        </div>
+        <div class="lightbox-img-box">
+          <img id="lb-img2" src="" alt="Imagen 2">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function imprimirObraIndividual(idObra) {
+      const todasLasPaginas = document.querySelectorAll('.a4-page');
+      todasLasPaginas.forEach(pag => {
+        const esDeLaObra = pag.getAttribute('data-obra') === idObra;
+
+        if (!esDeLaObra) {
+          pag.classList.add('hide-on-print');
+        } else {
+          pag.classList.remove('hide-on-print');
+          pag.style.display = 'flex';
+        }
+      });
+      window.print();
+      todasLasPaginas.forEach(pag => {
+        pag.classList.remove('hide-on-print');
+        pag.style.display = '';
+      });
+    }
+
+    function openLightboxTriple(img1Src, textContent, img2Src) {
+      document.getElementById("lb-img1").src = img1Src;
+      document.getElementById("lb-text").innerHTML = textContent;
+      document.getElementById("lb-img2").src = img2Src;
+      document.getElementById("lightbox").classList.add("active");
+    }
+
+    function closeLightbox() { 
+      document.getElementById("lightbox").classList.remove("active"); 
+    } 
+
+    document.addEventListener('keydown', function(event) { 
+      if (event.key === "Escape") { 
+        closeLightbox(); 
+      } 
+    });
+  </script>
+</body>
+</html>
